@@ -40,6 +40,17 @@
       },
       "source": "./plugins/requirements-pipeline",
       "category": "development"
+    },
+    {
+      "name": "requirements-lite",
+      "description": "Pipeline liviano de requisitos: convierte un documento o una sesion conversacional en requirements.json + data-model.json + technical-design.json compatibles con planning-pipeline, sin LEL ni escenarios. Pensado para MVPs, proyectos chicos, refresh de existentes y encargos con scope acotado. ~25-35% del costo del pipeline pesado.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Lucas Micheli",
+        "email": "lucas.t.micheli@gmail.com"
+      },
+      "source": "./plugins/requirements-lite",
+      "category": "development"
     }
   ]
 }

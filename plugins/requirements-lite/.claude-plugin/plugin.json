@@ -1,0 +1,18 @@
+{
+  "name": "requirements-lite",
+  "version": "1.0.0",
+  "displayName": "Requirements Lite (sketch rapido)",
+  "description": "Pipeline liviano de requisitos: convierte un documento de dominio o una sesion conversacional en requirements.json + data-model.json + technical-design.json compatibles con planning-pipeline, sin LEL ni escenarios. Pensado para MVPs, proyectos chicos, refresh de existentes y encargos con scope acotado.",
+  "keywords": [
+    "requisitos",
+    "requirements",
+    "sketch",
+    "mvp",
+    "lite"
+  ],
+  "author": {
+    "name": "Lucas Micheli",
+    "email": "lucas.t.micheli@gmail.com"
+  },
+  "license": "MIT"
+}
