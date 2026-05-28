@@ -43,9 +43,14 @@ Si no hay ni documento ni input conversacional, detenete y avisa al orquestador.
   restricciones, glosario, capacidades, dudas) no esta en la fuente, dejala
   vacia o registra una `open_question` con `blocking: true`.
 - Vocabulario: capturas solo terminos canonicos del dominio con definicion de 1
-  linea. No es un LEL: no rastrees impactos cruzados, no clasifiques en
-  sujeto/objeto/verbo/estado, no agregues alias salvo que la fuente los nombre
-  expresamente.
+  linea. No es un LEL: no rastrees impactos cruzados ni agregues alias salvo
+  que la fuente los nombre expresamente.
+- **Opcional pero recomendado** clasificar cada termino con `kind:
+  sujeto|objeto|verbo|estado`. No es obligatorio (el lite no lo necesita para
+  generar requirements/design), pero **habilita un upgrade futuro al pipeline
+  pesado** sin rehacer el glosario desde cero. Si lo agregas, usa los mismos
+  criterios que el LEL clasico (sujeto = actor, objeto = entidad de datos,
+  verbo = proceso/accion, estado = condicion observable).
 - Capacidades de alto nivel: titulo + descripcion 1-2 lineas. Es lo que despues
   va a derivar en feature_groups (`FG-XX`); no las confundas con requisitos
   funcionales (`RF-XXX`), que viven en la siguiente etapa.
@@ -55,6 +60,22 @@ Si no hay ni documento ni input conversacional, detenete y avisa al orquestador.
 - Open questions: marcalas con `blocking: true|false`. `blocking: true` significa
   que si nadie la responde, el output de las etapas siguientes va a tener una
   asuncion fuerte; `false` significa que es nice-to-know.
+- **Checklist de preguntas tipicas a verificar por categoria de constraint:**
+  recorre cada constraint del brief y, segun su categoria, busca activamente
+  si el documento responde estas preguntas. Si no las responde, registralas
+  como `open_questions`:
+  - `compliance`: regimen aplicable (GDPR, ley local), politica de retencion,
+    politica de anonimizacion, derechos del titular (acceso, borrado).
+  - `security`: longitud de sesion, politica de password, MFA, rate-limit
+    por endpoint, cifrado en reposo de datos sensibles.
+  - `performance`: SLA exacto por flujo critico, volumen pico esperado,
+    estrategia de cache.
+  - `business`: que rol valida las reglas, multi-tenancy explicito (un
+    tenant vs varios), si hay flujo de aprobacion.
+  - `stack`: version exacta de cada dependencia critica, politica de
+    upgrades, requisitos de despliegue.
+  El objetivo no es preguntar por todo, sino no dejar implicitos los puntos
+  que normalmente generan ambiguedad en proyectos similares.
 - Todos los valores legibles en espanol. Ids cortos y consecutivos:
   `ACT-001` actores, `CNS-001` constraints, `CAP-01` capacidades, `Q-001` dudas.
 
@@ -98,7 +119,7 @@ valido, sin cercas de markdown):
     }
   ],
   "domain_glossary": [
-    {"term": "string", "definition": "string (1 linea)"}
+    {"term": "string", "definition": "string (1 linea)", "kind": "sujeto|objeto|verbo|estado (opcional; recomendado para futuro upgrade al pesado)"}
   ],
   "high_level_capabilities": [
     {

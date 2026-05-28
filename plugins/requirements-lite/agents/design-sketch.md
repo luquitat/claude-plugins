@@ -35,9 +35,17 @@ abstracta.
 - Sos compacto. Volumen objetivo (orientativo, no limite duro):
   - 8-20 entidades en el modelo de datos.
   - 5-10 modulos.
-  - 5-15 contratos de API (los principales, no todos).
+  - **Contratos de API: 1 API_id = 1 metodo + 1 path.** No agrupes verbos
+    distintos bajo un mismo id. Si tenes `POST /api/eventos`, `PATCH
+    /api/eventos/:id` y `DELETE /api/eventos/:id`, son 3 API_ids distintos
+    (API-013, API-014, API-015). Volumen tipico: 15-30 contratos para un
+    sistema con 8-12 entidades.
   - 5-10 pantallas.
-  - 2-5 ADRs (solo cuando hay decision real, no para todo).
+  - **ADRs: threshold proporcional a la complejidad tecnica del proyecto.**
+    Banda 2-5 para proyectos con 1-2 ejes tecnicos no triviales; banda 3-8
+    cuando el proyecto combina 3 o mas ejes diferenciados (IA, offline,
+    realtime, integraciones externas, multi-tenancy estricto). Cada eje suele
+    ameritar 1-2 ADRs propios.
 - No corras inspeccion de normalizacion. Tu modelo de datos puede no estar en
   3FN. Si el usuario quiere garantia de normalizacion, que use el pipeline
   pesado.
@@ -61,6 +69,14 @@ abstracta.
   esta en el glosario del brief, `glossary_term`.
 - **No** generes `lel_symbol_id` ni `covered_symbol_ids`: en el pipeline
   liviano no existen.
+- **AuditLog obligatoria como entidad cuando hay compliance/audit.** Si el
+  brief tiene al menos un `constraints[*]` con `category: "compliance"` o
+  mencion explicita de auditoria/AuditLog/tracking de cambios criticos,
+  AuditLog DEBE ser una entidad modelada (ENT-XXX) con sus campos minimos
+  (id, userId?, entidad, entidadId, accion, payloadPrev, payloadNew,
+  timestamp, ip?) y aclarando en `assumptions` que tiene REVOKE UPDATE/DELETE
+  a nivel DB. No es opcional: dejarla como warning rompe la trazabilidad
+  hacia tareas downstream que la referencian por `entity_ids`.
 
 ## Diseno tecnico
 

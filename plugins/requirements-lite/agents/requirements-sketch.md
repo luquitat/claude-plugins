@@ -31,11 +31,25 @@ Lee:
   `category: performance|security|compliance|reliability|usability` u otro
   RNF-tipico del brief. Si la categoria del constraint es `business|legal|budget|
   timeline|other`, suele alimentar el `rationale` de un RF o un ADR (no un RNF).
-- Volumen objetivo del sketch (no es un limite duro, es una orientacion):
-  - 15-30 requisitos funcionales para un proyecto chico/medio.
-  - 4-10 requisitos no funcionales.
-  - 5-10 feature_groups.
-  Si el brief justifica mas, generalo; si justifica menos, no infles.
+- Volumen objetivo del sketch (orientacion proporcional, no limite duro):
+  - RF: **4-5 RF por capability del brief** como banda razonable. Para un
+    brief con 5 capacidades: ~20-25 RF; para uno con 8 capacidades: ~32-40 RF.
+    Si fusionas mas, una sola tarea va a ser demasiado grande para
+    `planning-pipeline`; si abris mas, perdes el ahorro del lite.
+  - RNF: 4-10 (ver checklist obligatoria abajo).
+  - feature_groups: 1-2 por capability, con un techo natural de ~10-12.
+- **Checklist obligatoria de categorias de RNF.** Para cada una de estas
+  categorias, recorre los `constraints` del brief y emite al menos 1 RNF si
+  hay evidencia. Si no hay constraint que lo justifique, deja una
+  `open_question` blocking explicando que la categoria no esta cubierta:
+  - `performance`: latencia / throughput / volumen pico.
+  - `security`: auth, RBAC, rate-limit, cifrado en transito.
+  - `reliability`: disponibilidad, recuperacion, idempotencia.
+  - `compliance`: privacidad, retencion, auditoria.
+  - `maintainability` u `observability`: logs, correlation id, retencion
+    logs, convenciones de codigo, validacion en boundary.
+  Esto evita el patron tipico del sketch donde los RNF transversales se
+  pierden porque no estan en una capability explicita del brief.
 - Acceptance criteria por requisito: 1-3 en formato Gherkin. Cubri el camino
   principal y, si hay un error claramente nombrado en el brief, 1 path de error.
   No agregues criterios especulativos.
