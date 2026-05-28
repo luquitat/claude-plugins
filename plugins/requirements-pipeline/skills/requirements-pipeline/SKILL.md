@@ -29,6 +29,32 @@ Todos los archivos se generan en `.dev/requirements/` del proyecto actual.
 
 ## Procedimiento
 
+### Paso 0a - Opt-in del plugin experiments (chequeo por proyecto)
+
+Antes de arrancar, lee `.dev/.experiments.json` del proyecto. Tres casos:
+
+1. **El archivo no existe**: es la primera vez que un plugin participa de
+   este flujo en este proyecto. Preguntale al usuario:
+   > "Hay un plugin opcional `experiments` que puede medir esta corrida
+   > (cobertura, refs colgadas, tamano, tiempo), guardarla como evidencia y,
+   > cuando junte varias, sugerir mejoras al plugin actual. No corre nada
+   > sin tu permiso explicito. Activarlo solo agrega una pregunta al cierre
+   > de cada corrida. **¿Activar para este proyecto? (s/n, default n)**"
+
+   Si responde si: crea `.dev/.experiments.json` con
+   `{"version": 1, "opt_in": true, "created_at": "<iso8601>", "updated_at": "<iso8601>", "runs": []}`.
+   Si responde no: crea el mismo archivo con `"opt_in": false`. En ambos casos
+   no preguntes mas en futuras corridas.
+
+2. **Existe con `opt_in: true`**: continua silenciosamente; al cierre vas a
+   ofrecer experiments.
+
+3. **Existe con `opt_in: false`**: continua silenciosamente; saltea el prompt
+   de cierre.
+
+No bloquees el flujo por esto: si el usuario no responde rapido o el archivo
+no se puede leer, asume `opt_in: false` y segui.
+
 ### Paso 0 - Documento de entrada
 
 Identifica la ruta del documento (Word, PDF, Markdown o texto). Si el usuario no la dio,
@@ -112,6 +138,38 @@ modelo de datos y, cuando el stack es relacional, la normalizacion en formas nor
 Informa al usuario los archivos generados en `.dev/requirements/` y resalta el conteo de
 simbolos del LEL, defectos del LEL y del diseno, escenarios, requisitos, entidades del
 modelo de datos y decisiones de diseno, mas las preguntas abiertas que siguen bloqueando.
+
+### Paso 5b - Registro en .dev/.experiments.json + prompt opcional de experiments
+
+Despues del cierre normal, actualiza `.dev/.experiments.json` agregando una
+entrada a `runs[]`:
+
+```json
+{
+  "plugin": "requirements-pipeline",
+  "ran_at": "<iso8601>",
+  "outputs_path": ".dev/requirements/",
+  "baseline_ref": null,
+  "notes": "<resumen 1 linea: counts del LEL/escenarios/requisitos y defectos>"
+}
+```
+
+Despues:
+- Si `opt_in: true`: mostrale al usuario este texto explicativo y la pregunta
+  > "El plugin `experiments` puede medir esta corrida (cobertura de
+  > requisitos, refs colgadas, tamano del output, tiempo) y compararla
+  > contra una baseline para detectar drift o sugerir mejoras al plugin.
+  > **¿Correr `/exp-bench requirements-pipeline` ahora? (s/n, default n)**"
+  >
+  > "Si decis si: se genera `.dev/experiments/requirements-pipeline/bench-<fecha>.md`
+  > con metricas + observaciones, sin tocar tu output. Si decis no, queda
+  > para despues; podes correrlo en cualquier momento."
+
+  Si responde si: dispara `/exp-bench requirements-pipeline` (asume que el
+  plugin existe; si no, avisar al usuario que no esta instalado).
+  Si responde no o no responde: cierra.
+
+- Si `opt_in: false`: cierra sin preguntar nada.
 
 ## Reglas de orquestacion
 

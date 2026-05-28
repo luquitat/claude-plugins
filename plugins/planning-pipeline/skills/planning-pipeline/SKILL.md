@@ -35,6 +35,32 @@ requisitos (`requirements-pipeline`).
 
 ## Procedimiento
 
+### Paso 0a - Opt-in del plugin experiments (chequeo por proyecto)
+
+Antes de arrancar, lee `.dev/.experiments.json` del proyecto. Tres casos:
+
+1. **El archivo no existe**: es la primera vez que un plugin participa de
+   este flujo en este proyecto. Preguntale al usuario:
+   > "Hay un plugin opcional `experiments` que puede medir esta corrida
+   > (cobertura, refs colgadas, tamano, tiempo), guardarla como evidencia y,
+   > cuando junte varias, sugerir mejoras al plugin actual. No corre nada
+   > sin tu permiso explicito. Activarlo solo agrega una pregunta al cierre
+   > de cada corrida. **¿Activar para este proyecto? (s/n, default n)**"
+
+   Si responde si: crea `.dev/.experiments.json` con
+   `{"version": 1, "opt_in": true, "created_at": "<iso8601>", "updated_at": "<iso8601>", "runs": []}`.
+   Si responde no: crea el mismo archivo con `"opt_in": false`. En ambos casos
+   no preguntes mas en futuras corridas.
+
+2. **Existe con `opt_in: true`**: continua silenciosamente; al cierre vas a
+   ofrecer experiments.
+
+3. **Existe con `opt_in: false`**: continua silenciosamente; saltea el prompt
+   de cierre.
+
+No bloquees el flujo por esto: si el usuario no responde rapido o el archivo
+no se puede leer, asume `opt_in: false` y segui.
+
 ### Paso 1 - Derivar tareas y planificar sprints
 
 Invoca `task-derivation` y luego `sprint-planning`, en orden y de a una con la herramienta
@@ -73,6 +99,39 @@ feature en `.dev/features/`, listo para alimentar un pipeline de desarrollo de f
 Informa al usuario los archivos generados en `.dev/plan/` y `.dev/features/`, y resalta el
 conteo de features, tareas y sprints, el esfuerzo total, el grado de paralelismo maximo
 (de `parallel-plan.json`) y las preguntas abiertas.
+
+### Paso 5b - Registro en .dev/.experiments.json + prompt opcional de experiments
+
+Despues del cierre normal, actualiza `.dev/.experiments.json` agregando una
+entrada a `runs[]`:
+
+```json
+{
+  "plugin": "planning-pipeline",
+  "ran_at": "<iso8601>",
+  "outputs_path": ".dev/plan/",
+  "baseline_ref": null,
+  "notes": "<resumen 1 linea: cantidad de tareas, sprints, paralelismo maximo>"
+}
+```
+
+Despues:
+- Si `opt_in: true`: mostrale al usuario este texto explicativo y la pregunta
+  > "El plugin `experiments` puede medir esta corrida (cobertura de
+  > requisitos por tareas, refs colgadas, paralelismo logrado, defectos del
+  > plan, tamano del output) y compararla contra una baseline para detectar
+  > drift o sugerir mejoras al plugin.
+  > **¿Correr `/exp-bench planning-pipeline` ahora? (s/n, default n)**"
+  >
+  > "Si decis si: se genera `.dev/experiments/planning-pipeline/bench-<fecha>.md`
+  > con metricas + observaciones, sin tocar tu output. Si decis no, queda
+  > para despues; podes correrlo en cualquier momento."
+
+  Si responde si: dispara `/exp-bench planning-pipeline` (asume que el plugin
+  existe; si no, avisar al usuario que no esta instalado).
+  Si responde no o no responde: cierra.
+
+- Si `opt_in: false`: cierra sin preguntar nada.
 
 ## Reglas de orquestacion
 
