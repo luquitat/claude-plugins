@@ -6,7 +6,8 @@ El orquestador no retiene en contexto los veredictos de N features para redactar
 resumen final: este script lee `progress.json`, `execution-plan.json`, los briefs,
 `reviews/`, `security/`, `verification/`, `desvios/`, `cr-input-*.md`, `tech-debt.md` y
 `.dev/manual/` y emite el Markdown del resumen. El orquestador lo muestra tal cual y
-solo agrega el proximo paso.
+solo agrega el proximo paso. Cierra con los worktrees `../{repo}-wt-*` que siguen en
+pie (de `cleanup_worktrees.py`): si la limpieza del lote no corrio, se ve aca.
 
 Uso:
   python render_batch_summary.py <raiz> [--lote BATCH-2] [--features FG-01 FG-02] [--json]
@@ -22,6 +23,9 @@ import json
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import cleanup_worktrees  # noqa: E402  (hermano en la misma carpeta de scripts)
 
 
 def load(path):
@@ -205,6 +209,21 @@ def render(entries, lote=None):
     return "\n".join(lines)
 
 
+def worktrees_section(root):
+    items = cleanup_worktrees.inventory(root)
+    if items is None:
+        return ""
+    lines = ["## Worktrees en pie", ""]
+    if not items:
+        return "\n".join(lines + ["Ninguno.", ""])
+    pending = [i for i in items if i["decision"] == "remove"]
+    for it in items:
+        lines.append("- `%s`%s — %s" % (Path(it["path"]).name, (" (%s)" % it["branch"]) if it["branch"] else "", it["reason"]))
+    if pending:
+        lines += ["", "**%d sin limpiar**: correr `cleanup_worktrees.py <raiz> --aplicar`." % len(pending)]
+    return "\n".join(lines + [""])
+
+
 # ------------------------------------------------------------------ self-test
 
 def self_test():
@@ -247,6 +266,11 @@ def self_test():
         else:
             print("SELF-TEST FALLO: %s\n%s" % (checks, md))
             failures += 1
+        if worktrees_section(tmp) != "":
+            print("SELF-TEST FALLO: seccion de worktrees fuera de un repo git")
+            failures += 1
+        else:
+            print("self-test ok (sin repo git no hay seccion de worktrees)")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     return 1 if failures else 0
@@ -289,6 +313,9 @@ def main(argv):
         print(json.dumps(entries, ensure_ascii=False, indent=2))
     else:
         print(render(entries, lote))
+        section = worktrees_section(Path(root))
+        if section:
+            print(section)
     return 0
 
 

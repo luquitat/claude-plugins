@@ -33,7 +33,7 @@
     {
       "name": "build-pipeline",
       "description": "Ejecuta el plan de los pipelines de requisitos y planificacion, en cualquier lenguaje o framework: detecta el stack por evidencia, implementa cada feature en su rama verificando los criterios de aceptacion, construye lotes en paralelo (un agente por feature en worktrees), genera la guia de usuario final de cada feature (Markdown en .dev/manual/) y mantiene progress.json al dia para la replanificacion. En consola conversa en modo gastada (humor rioplatense, solo en la charla: los artefactos salen impecables).",
-      "version": "1.7.1",
+      "version": "1.8.0",
       "author": {
         "name": "Lucas Micheli",
         "email": "lucas.t.micheli@gmail.com"

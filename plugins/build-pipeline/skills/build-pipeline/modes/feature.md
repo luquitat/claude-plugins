@@ -13,7 +13,9 @@ Las convenciones, los scripts y las reglas son las de `SKILL.md`; `{b}` es el
    pendiente es un lote de ajuste (`adjustment: true`), construi solo esas tareas en
    `feature/{slug}-ajuste`.
 2. **Perfil de stack** (convenciones). Si el proyecto no tiene CI que corra test y
-   lint, bootstrapealo en esta rama.
+   lint, bootstrapealo en esta rama. En un proyecto con historia sin
+   `accepted-baseline.json`, capturala antes de crear la rama (convencion **Linea de
+   base**).
 3. **Plan de implementacion**: invoca `feature-implementer` en **modo plan** con
    `model: sonnet` (reordena el brief, no razona codigo: no necesita opus). Mostrale
    al usuario el plan (enfoque por tarea, archivos, verificacion) y **espera su

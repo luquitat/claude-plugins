@@ -75,12 +75,13 @@ deterministas; los modelos se reservan para construir, revisar y documentar.
 
 | Script | Rol |
 |---|---|
-| `verify.py` | test + lint + audit una vez por ronda → `verification/{b}.json` |
+| `verify.py` | test + lint + audit una vez por ronda → `verification/{b}.json`; con `accepted-baseline.json` (`--capturar-baseline`), bloquea ante regresiones, no ante lo heredado |
 | `progress_update.py` | unica via de escritura de `progress.json` (`--init`, transiciones, `--estado`) |
 | `validate_verdict.py` | contrato de veredictos; `--compuerta` = compuerta dura pre-PR |
 | `render_cr_input.py` | `cr-input-{b}.md` + `tech-debt.md` con dedupe |
 | `render_manual_index.py` | indice del manual; `--cobertura` para DOCUMENTAR |
-| `render_batch_summary.py` | resumen final de lote o feature |
+| `render_batch_summary.py` | resumen final de lote o feature, con los worktrees en pie |
+| `cleanup_worktrees.py` | cierre del lote: limpia worktrees de features cerradas, `prunable` y huerfanos |
 
 La orquestacion comun vive en `skills/build-pipeline/SKILL.md`; cada modo en
 `skills/build-pipeline/modes/`. Referencias: `reference/owasp-baseline.md` (solo la

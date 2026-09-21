@@ -18,14 +18,16 @@ siempre contra `{raiz}`, con `--cwd <worktree>` cuando ejecutan comandos).
 2. **Perfil de stack** (convenciones). **Greenfield sin esqueleto**: construi UNA
    feature del lote en secuencia primero (su primera tarea crea el esqueleto),
    mergeala por PR, y recien despues paraleliza; con ese merge, re-invoca
-   `stack-profiler` en modo `--solo-validar-comandos`.
+   `stack-profiler` en modo `--solo-validar-comandos`. **Proyecto con historia** sin
+   `accepted-baseline.json`: capturala sobre la integracion antes de cualquier rama
+   (convencion **Linea de base**; si hay ronda de contratos, antes de ella).
 3. **Un worktree por feature**, y `--status in_progress --branch feature/{slug}`
    recien cuando el worktree quedo listo:
    `git worktree add ../{repo}-wt-{slug} -b feature/{slug} {rama_integracion}`.
-   - Restos de corridas anteriores: si retomas, reusalos; si no, limpialos
-     (recursos externos del worktree primero — `docker compose down -v` si su
-     proyecto compose sigue existiendo —, `git worktree remove --force`,
-     `git worktree prune`; la rama solo si no tiene commits que importen).
+   - Restos de corridas anteriores: si retomas, reusalos; si no,
+     `cleanup_worktrees.py {raiz} --aplicar` (baja el compose del worktree, lo
+     remueve con `--force`, barre `prunable` y huerfanas; nunca pierde trabajo sin
+     commitear o sin pushear).
    - Bootstrap: corre `commands.install` del perfil en cada worktree y copia la
      config local no versionada que los tests necesiten (`.env` de test). Usa la
      cache del gestor para no descargar N veces (`npm ci --prefer-offline`, el store
@@ -63,7 +65,9 @@ siempre contra `{raiz}`, con `--cwd <worktree>` cuando ejecutan comandos).
    **Narracion dosificada**: al cerrar cada feature, 2-3 lineas al usuario (estado,
    PR, dato saliente) mas el puntero a sus veredictos. Nada de hallazgos ni cierres
    por requisito en el medio del lote: el detalle vive en los artefactos.
-8. **Cierre del lote**: `render_manual_index.py {raiz}` (commit en la primera rama de
+8. **Cierre del lote**: `cleanup_worktrees.py {raiz} --aplicar` siempre, aunque
+   hayas limpiado feature por feature (es la red: barre lo que el paso 7 no bajo y
+   restos de lotes anteriores); `render_manual_index.py {raiz}` (commit en la primera rama de
    la corrida si cambio; ofrece regenerarlo si los PRs mergearon en sesion);
    `render_index.py .dev`; y el **resumen final** es la salida de
    `render_batch_summary.py {raiz} --lote BATCH-n` tal cual, mas: worktrees de

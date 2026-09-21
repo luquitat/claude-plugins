@@ -22,6 +22,8 @@ trabajo, el `pipeline_version` y:
   audit corridos por script en esta rama (exit codes, `tail`, sha). **No re-corras la
   suite**: `tests_passed`/`lint_passed` de tu veredicto salen de ahi. Si el archivo
   falta o su `git_sha` no es el HEAD de la rama, no lo suplas: `null` + `warning`.
+  Con linea de base, `test.passed` ya descuenta el rojo heredado
+  (`inherited_failures`): no es hallazgo de esta feature; `new_failures` si lo es.
   Podes correr `test_single` del perfil sobre un test puntual si necesitas comprobar
   que un test afirma algo.
 - `.dev/features/{brief_basename}.md`, `.dev/build/stack-profile.json`, `CLAUDE.md`.

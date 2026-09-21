@@ -24,7 +24,11 @@ trabajo, el `pipeline_version` y:
 - `.dev/build/verification/{brief_basename}.json` — el `dependency_audit` ya corrido
   por script (`severities` normalizadas, `tail`). **No lo re-corras**:
   `dependency_audit_run`/`dependency_audit_passed` salen de ahi (`run: false` si el
-  baseline no tenia comando; si el archivo falta, `null` + `warning`).
+  baseline no tenia comando; si el archivo falta, `null` + `warning`). En un proyecto
+  con linea de base (`baseline` no nulo), el audit separa `accepted` (preexistentes,
+  no son de esta feature: no los reportes como hallazgo, a lo sumo un `warning`) de
+  `new` (los que aparecieron en esta rama: esos son tu A06). Las `severities` son las
+  del auditor (en npm, paquetes afectados); no recuentes a partir de `tail`.
 - `.dev/features/{brief_basename}.md` (seccion Seguridad y contratos con
   `auth_required`), `.dev/build/stack-profile.json`, `CLAUDE.md`, y el reporte del
   implementador si te lo pasan.
@@ -49,7 +53,7 @@ Solo las categorias que la superficie del baseline justifica y que el diff toca:
 - **A07** auth casera, cookies sin flags, sesiones/tokens sin expiracion.
 - **A05** debug en prod, CORS abierto, stack traces al usuario.
 - **A06** vulnerabilidades critical/high segun `verification/` que la feature
-  introduce.
+  introduce (con linea de base: las de `new`).
 - **A08** mass assignment sin whitelist, deserializacion insegura.
 - **A10** requests salientes con host influido por el usuario. **A09** logs con
   secretos/PII.

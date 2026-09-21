@@ -15,8 +15,10 @@ Dos usos:
 2. Compuerta pre-PR de una feature:
      python validate_verdict.py <raiz> --compuerta --brief FG-05-carrito
    Exige `reviews/{brief}.json` y `security/{brief}.json` validos y ambos con
-   `passed: true`; si existe `verification/{brief}.json`, exige tambien `passed: true`
-   y que sea de la misma rama que los veredictos.
+   `passed: true`; si existe `verification/{brief}.json`, exige tambien `passed: true`,
+   que sea de la misma rama que los veredictos y que no haya salteado ningun comando
+   con comando en el perfil (`verify.py --solo` no abre la compuerta: omite un control
+   aplicable). Lo heredado de la linea de base ya viene resuelto por `verify.py`.
 
 Solo stdlib. No modifica nada.
 Exit 0: valido / compuerta abierta. Exit 1: invalido / compuerta cerrada. Exit 2: uso.
@@ -135,6 +137,11 @@ def compuerta(root, brief):
     if vdata is not None:
         if vdata.get("passed") is not True:
             problems.append("verification/%s.json con passed=%s" % (brief, vdata.get("passed")))
+        skipped = [n for n, e in (vdata.get("commands") or {}).items()
+                   if isinstance(e, dict) and e.get("skipped") and e.get("command")]
+        if skipped:
+            problems.append("verification/%s.json salteo %s (verify.py --solo): la compuerta exige la verificacion completa"
+                            % (brief, ", ".join(sorted(skipped))))
         if vdata.get("branch") and branches and vdata["branch"] not in branches:
             problems.append("verification/%s.json es de la rama %s, los veredictos de %s" % (brief, vdata["branch"], ",".join(sorted(branches))))
     if len(branches) > 1:
@@ -217,6 +224,16 @@ def self_test():
             failures += 1
         else:
             print("self-test ok (compuerta cerrada con gate en false)")
+        (build / "security" / "FG-01-demo.json").write_text(json.dumps(_gate(True)), encoding="utf-8")
+        (build / "verification").mkdir()
+        (build / "verification" / "FG-01-demo.json").write_text(json.dumps({"passed": True, "commands": {
+            "test": {"command": "npm test", "passed": True},
+            "dependency_audit": {"command": "npm audit --json", "passed": None, "skipped": True}}}), encoding="utf-8")
+        if not any("salteo dependency_audit" in p for p in compuerta(tmp, "FG-01-demo")):
+            print("SELF-TEST FALLO (compuerta abierta con el audit salteado por --solo)")
+            failures += 1
+        else:
+            print("self-test ok (compuerta cerrada con un comando salteado)")
         if not compuerta(tmp, "FG-99-nada"):
             print("SELF-TEST FALLO (compuerta abierta sin veredictos)")
             failures += 1

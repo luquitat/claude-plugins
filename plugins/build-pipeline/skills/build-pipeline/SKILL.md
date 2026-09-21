@@ -54,13 +54,15 @@ proyecto, mostra su salida al usuario — no lo suplas a mano.
 
 | Script | Que hace | Cuando |
 |---|---|---|
-| `verify.py <raiz> --brief {b} [--cwd <worktree>]` | Corre test, lint y `dependency_audit` del perfil UNA vez y deja `.dev/build/verification/{b}.json` (exit codes, audit normalizado por severidad, sha) | Despues de cada pasada del implementador (ejecucion y correccion), antes de reviewer y gate |
+| `verify.py <raiz> --brief {b} [--cwd <worktree>]` | Corre test, lint y `dependency_audit` del perfil UNA vez y deja `.dev/build/verification/{b}.json` (exit codes, audit normalizado por severidad, sha). Con linea de base, bloquea ante **regresiones**: rojo heredado y advisories aceptados quedan a la vista pero no bloquean | Despues de cada pasada del implementador (ejecucion y correccion), antes de reviewer y gate |
+| `verify.py <raiz> --capturar-baseline` | `.dev/build/accepted-baseline.json`: tests que ya fallaban y advisories ya presentes, sobre la rama de integracion limpia | Una vez, antes de la primera feature de un proyecto con historia (ver Linea de base) |
 | `progress_update.py <raiz> --feature FG-xx [--status] [--branch] [--task T=estado] [--note]` | Transiciones validadas de `progress.json` | En cada transicion; `--init` para crear; `--estado` para consultar |
 | `validate_verdict.py <veredicto.json>` | Contrato del veredicto (claves, ids namespaced, `passed` coherente) | Al recibir cada veredicto |
-| `validate_verdict.py <raiz> --compuerta --brief {b}` | Compuerta dura pre-PR: review + gate (+ verification) en `passed: true` y de la misma rama | Antes de abrir cada PR |
+| `validate_verdict.py <raiz> --compuerta --brief {b}` | Compuerta dura pre-PR: review + gate (+ verification completa, sin `--solo`) en `passed: true` y de la misma rama | Antes de abrir cada PR |
 | `render_cr_input.py <raiz> --brief {b}` | `cr-input-{b}.md` desde `desvios/{b}.json` del implementador, y `tech-debt.md` (TD-nnn con dedupe) desde los hallazgos `low` | Al cerrar cada feature (review y gate en verde) |
 | `render_manual_index.py <raiz> [--cobertura]` | `.dev/manual/README.md` desde el frontmatter de las guias; `--cobertura` lista features `done` sin guia | Primera rama de cada corrida y cierre; DOCUMENTAR paso 1 |
-| `render_batch_summary.py <raiz> [--lote BATCH-n \| --features FG-xx]` | Resumen final consolidado en Markdown desde los artefactos | Cierre de FEATURE y LOTE |
+| `render_batch_summary.py <raiz> [--lote BATCH-n \| --features FG-xx]` | Resumen final consolidado en Markdown desde los artefactos, con los worktrees que siguen en pie | Cierre de FEATURE y LOTE |
+| `cleanup_worktrees.py <raiz> [--aplicar]` | Limpia los `../{repo}-wt-*` de features cerradas (done o con PR), entradas `prunable` y carpetas huerfanas: compose down, `worktree remove --force`, prune. Deja en pie bloqueadas, en curso y todo lo que tenga trabajo sin commitear o sin pushear | Cierre del LOTE, siempre (tambien barre restos de lotes anteriores) |
 
 Ademas, el indice de `.dev` (`.dev/README.md`) lo regenera el script de la suite:
 `suite-render-index .dev`
@@ -103,7 +105,18 @@ se publica por slug.
 - **Verificacion por script**: tras cada pasada del implementador corre `verify.py`;
   el reviewer y el gate leen `verification/{b}.json` y no re-corren la suite. Si
   `verify.py` falla, vuelve al implementador con la `tail` del comando fallido antes
-  de gastar un review.
+  de gastar un review. Con linea de base, fallar significa **regresion**: pasale
+  `new_failures` o los advisories `new`, nunca lo heredado (no es su alcance).
+- **Linea de base (proyectos con historia)**: si el perfil no es `greenfield` y no
+  existe `.dev/build/accepted-baseline.json`, antes de la primera feature corre
+  `verify.py {raiz} --capturar-baseline` sobre la rama de integracion (arbol limpio;
+  el script rechaza un arbol sucio) y commitealo ahi (`build: linea de base de
+  verificacion`). Informale al usuario que se acepto (tests rojos y advisories
+  critical/high, la salida del script): sin eso, un repo con la suite en rojo o
+  vulnerabilidades preexistentes nunca abre la compuerta. Nunca la captures en una
+  rama de feature ni en un worktree: aceptaria lo que la feature introdujo. Se
+  re-captura con `--reemplazar` solo sobre la integracion, cuando se arreglo algo
+  heredado (la linea de base se achica).
 - **CI del proyecto (checks independientes)**: si el perfil dice que no hay CI que
   corra test/lint, bootstrapealo en la primera rama de la corrida con un commit propio
   (`ci: test y lint en PRs`): workflow minimo del proveedor de la forja con
@@ -186,6 +199,7 @@ se publica por slug.
 .dev/build/
   stack-profile.json            perfil de stack (por evidencia)
   security-baseline.json        base de seguridad del stack
+  accepted-baseline.json        rojo heredado y advisories aceptados (verify.py --capturar-baseline)
   verification/{b}.json         resultado de test/lint/audit por feature (verify.py)
   reviews/{b}.json              veredicto de review (unica fuente de verdad)
   security/{b}.json             veredicto de seguridad (idem)

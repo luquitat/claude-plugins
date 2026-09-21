@@ -35,12 +35,13 @@ Todo lo derivado, determinista o repetitivo del build vive en
 
 | Script | Reemplaza |
 |---|---|
-| `verify.py` | Correr test, lint y audit una vez por ronda y dejar `verification/{b}.json`; reviewer y gate lo leen en vez de re-correr la suite y parsear logs |
+| `verify.py` | Correr test, lint y audit una vez por ronda y dejar `verification/{b}.json`; reviewer y gate lo leen en vez de re-correr la suite y parsear logs. En proyectos con historia, `--capturar-baseline` fija el rojo heredado y los advisories aceptados, y la verificacion bloquea solo ante regresiones |
 | `progress_update.py` | Editar `progress.json` a mano en cada transicion |
 | `validate_verdict.py` | Validar el contrato de cada veredicto clave por clave, y la compuerta dura pre-PR (`--compuerta`) |
 | `render_cr_input.py` | Redactar `cr-input-{b}.md` desde los desvios del implementador y acumular `tech-debt.md` con dedupe |
 | `render_manual_index.py` | Regenerar el indice del manual y cruzar features `done` contra guias (`--cobertura`) |
 | `render_batch_summary.py` | El resumen final consolidado de un lote o una feature |
+| `cleanup_worktrees.py` | Bajar a mano los worktrees del lote (y sus contenedores) al cerrarlo, y los restos a medio borrar |
 
 Y las decisiones de orquestacion que ahorran contexto: el diff se captura **una
 vez** a `.dev/build/.diff/{b}.patch` y se pasa por ruta; la re-review recibe **solo
@@ -108,7 +109,7 @@ build-pipeline/
   skills/build-pipeline/
     SKILL.md                 lo comun: convenciones, scripts, reglas, layout
     modes/{feature,lote,documentar}.md   procedimiento por modo, cargado a demanda
-    scripts/*.py             verify, progress_update, validate_verdict, render_*
+    scripts/*.py             verify, progress_update, validate_verdict, cleanup_worktrees, render_*
   commands/                  /construir, /construir-lote, /documentar
   reference/
     owasp-baseline.md        referencia OWASP (la lee solo stack-profiler)

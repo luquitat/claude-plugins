@@ -160,7 +160,12 @@ reescritura; `technical_design_version_ref` cita la `version` del diseno;
 ```
 
 `tooling.*` sin comando en el stack queda `null` con el hueco en `warnings`; el
-`dependency_audit` es el mas importante (lo corre `verify.py`). `how_to_apply` es lo
+`dependency_audit` es el mas importante (lo corre `verify.py`): el comando debe
+emitir JSON (`npm audit --json`, `pnpm audit --json`, `pip-audit -f json`, ...), que es
+lo que permite comparar advisories contra la linea de base. Si al validarlo citas
+vulnerabilidades en `warnings`, usa la unidad del auditor (en npm/pnpm,
+`metadata.vulnerabilities`: paquetes afectados por severidad), la misma que reporta
+`verify.py`; el conteo oficial es el suyo, no lo recuentes del arbol. `how_to_apply` es lo
 que el implementador aplica y el gate verifica: concreto, con el nombre del modulo o
 API del framework. `stack_profile_version_ref` cita la `version` actual del perfil de
 stack; si el stack cambia, ambos se regeneran juntos.
