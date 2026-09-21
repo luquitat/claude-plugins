@@ -1,6 +1,6 @@
 {
   "name": "planning-pipeline",
-  "version": "2.7.4",
+  "version": "2.7.5",
   "displayName": "Planning Pipeline (tareas y lotes paralelos para agentes IA)",
   "description": "Convierte una linea de base de requisitos en un plan de ejecucion para agentes IA: deriva tareas trazables a los requisitos dimensionadas para una pasada de agente, calcula los lotes de features que pueden construirse en paralelo (ronda de contratos + lotes), inspecciona el plan y emite un brief por feature. Con /replanificar absorbe incrementos y cambios de requisitos sin tocar lo ya construido.",
   "keywords": [

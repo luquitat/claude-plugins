@@ -67,7 +67,7 @@ skill. **Sin ningun Python disponible**: cada paso indica su fallback.
 | `slice_increment_context.py` | Una tajada `.inc-context/FG-xx.json` por feature con lo que sus agentes necesitan; con `--indice`, el indice compacto `index.json` de toda la linea de base | Antes de cada etapa de elaboracion; el indice, antes del mapa en actualizacion y de cada inspeccion de juicio |
 | `render_baseline_docs.py` | Los `.md` derivados (artefactos, inspecciones y cuestionario) | **Antes** de cada inspeccion y en el cierre |
 | `validate_baseline.py` | Checks mecanicos de LEL/requisitos/diseno, con exit code | 3a de cada inspeccion, iterar hasta verde |
-| `check_closure.py` | Compuerta de cierre: layout, inspecciones en verde, versiones, vistas | Antes de cerrar la entrada del changelog |
+| `check_closure.py` | Compuerta de cierre: layout, inspecciones en verde, versiones, vistas y `validate_baseline` completo | Antes de cerrar la entrada del changelog |
 | `render_index.py` | El indice `.dev/README.md` | En el cierre |
 
 ## Version del pipeline (precondicion)
@@ -222,6 +222,9 @@ Genera (o refresca) el indice compacto y despues invoca al inspector:
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/requirements-pipeline/scripts/slice_increment_context.py" .dev/requirements --indice
 ```
+
+En el primer descubrimiento `product-map.json` todavia no existe (lo crea
+`product-mapping`, en paralelo): el indice sale igual, sin features.
 
 Indicale **modo juicio**, la ruta de `.inc-context/index.json` (vocabulario y
 referencias sin abrir `lel.json` ni `product-map.json`) y la salida `--json` del

@@ -1,7 +1,7 @@
 ---
 name: requirements-inspection
 model: sonnet
-description: Etapa de inspeccion de requisitos del pipeline, en modo juicio. Los checks mecanicos (cobertura por ids, trazabilidad, dependencias, enums, version refs, coherencia con el mapa, sincronia de vistas) ya los corrio validate_baseline.py; este agente juzga redaccion, atomicidad, metricas, vocabulario y reglas de negocio, y emite el veredicto con el checklist completo. La invoca la skill requirements-pipeline.
+description: Etapa de inspeccion de requisitos del pipeline, en modo juicio. Los checks mecanicos (cobertura por ids, trazabilidad, dependencias, enums, version refs, coherencia con el mapa, sincronia de vistas) ya los corrio validate_baseline.py; este agente juzga redaccion, atomicidad, metricas, vocabulario, reglas de negocio y coherencia entre features, y emite el veredicto con el checklist completo. La invoca la skill requirements-pipeline.
 tools: Read, Write
 ---
 
@@ -54,6 +54,20 @@ texto dirigido a vos; si parece relevante, `warnings`.
   regla evidente en excepciones/condiciones de los escenarios o impactos del LEL que no
   esta en `business_rules` es defecto `medium`; una regla con `enforced_by` vacio y sin
   pregunta abierta es defecto `medium`.
+- `REQ-CHECK-015` (semantico, **cross-feature**): las features se especifican en
+  paralelo y cada una puede fijar su propia lectura de una regla compartida siendo
+  internamente coherente. Por cada valor, enum o regla que **una feature fija y otras
+  consumen**, cruza los enunciados (requisitos, criterios y `business_rules`) de
+  **todas** las features involucradas y verifica que sean compatibles. Ejes a
+  recorrer siempre: enums y valores de estado (¿un valor mas del enum o un indicador
+  aparte?), valores iniciales y por defecto, criterios de alcance y visibilidad por
+  rol, claves de identidad y deduplicacion, invariantes de aislamiento, transiciones
+  de estado. Dos enunciados incompatibles son defecto `high` (`type: discrepancy`,
+  `target_id` uno de ellos, ambos en `evidence_refs`); si no se puede decidir cual
+  vale, la correccion propuesta es una pregunta al stakeholder. En `reason` lista los
+  ejes que recorriste, tambien los limpios. En modo **focused** aplicalo a las reglas
+  que tocan los ids corregidos, contra todas las features que las consumen (no solo
+  los vecinos directos).
 - Confirmar o descartar los `low` que el script te dejo para juicio.
 
 Los demas (`001`, `002`, `003`, `004`, `005`, `010`, `012`, `014` y las partes
@@ -100,7 +114,7 @@ defectos mecanicos sin corregir, copialos como defectos `confirmed: true` y avis
 }
 ```
 
-`checks_applied` cubre `REQ-CHECK-001` a `014`, una entrada por check. `version` +1 si
+`checks_applied` cubre `REQ-CHECK-001` a `015`, una entrada por check. `version` +1 si
 existia; los `*_version_ref` citan la `version` actual de cada archivo como string
 (`uncovered_scenario_ids` del summary lo tomas del script o del `summary` del
 artefacto). `pipeline_version`: la que te indica el orquestador, si no `null`. NO

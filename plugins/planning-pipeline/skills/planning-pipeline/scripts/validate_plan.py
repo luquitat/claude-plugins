@@ -467,6 +467,10 @@ def check_briefs(root, tasks_doc, reqs_doc):
         body = candidates[0].read_text(encoding="utf-8-sig")
         if "CANCELADO" in body[:300]:
             continue
+        leftovers = re.findall(r"<!--\s*LLM:.*?-->", body)
+        if leftovers:
+            defect("BRIEF-LINT", "high", "%s (%s)" % (fid, candidates[0].name),
+                   "quedaron marcadores sin reemplazar: %s" % ", ".join(leftovers), "feature-brief")
         plain = norm(body)
         for head in ("Seguridad", "Vocabulario", "Criterios de cierre de feature"):
             if head not in plain:
@@ -578,6 +582,15 @@ def self_test():
                     failures += 1
                 else:
                     print("self-test ok (inyectar checks: %d checks, passed)" % len(inj["checks_applied"]))
+                # un marcador que sobrevive (p. ej. el resumen escrito encima) es defecto
+                brief = tmp / ".dev" / "features" / "FG-01-demo.md"
+                brief.write_text(brief.read_text(encoding="utf-8") + "\n<!-- LLM: resumen -->\n", encoding="utf-8")
+                code, found = run_checks(tmp, briefs=True, previa=None, afectadas=None, as_json=False, quiet=True)
+                if code == 0 or not any(d["check_id"] == "BRIEF-LINT" and "marcadores" in d["description"] for d in found):
+                    print("SELF-TEST FALLO (marcador LLM sobreviviente no detectado): %s" % found)
+                    failures += 1
+                else:
+                    print("self-test ok (marcador LLM sobreviviente detectado)")
             if break_it:
                 got_checks = {d["check_id"] for d in found}
                 expected = {"PLAN-CHECK-001", "PLAN-CHECK-002", "PLAN-CHECK-015", "BRIEF-LINT"}

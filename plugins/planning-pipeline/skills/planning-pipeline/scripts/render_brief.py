@@ -394,8 +394,13 @@ def self_test():
         check(LLM_SUMMARY in body and LLM_OWASP in body, "marcadores para el subagente")
         check("RF-001/AC-002" in body, "todo criterio de requisito figura en Criterios de cierre")
         check("auth_required" in body and "API-001" in body, "API con auth en Seguridad")
+        # recien renderizado, el linter solo objeta los marcadores (4c corre despues de 4b)
         code, found = vp.run_checks(tmp, briefs=True, previa=None, afectadas=None, as_json=False, quiet=True)
-        check(not [d for d in found if d["check_id"] == "BRIEF-LINT"], "pasa el linter de briefs (%s)" % [d["description"] for d in found if d["check_id"] == "BRIEF-LINT"])
+        lint = [d["description"] for d in found if d["check_id"] == "BRIEF-LINT"]
+        check(len(lint) == 1 and "marcadores" in lint[0], "sin completar, el linter solo objeta los marcadores (%s)" % lint)
+        brief.write_text(body.replace(LLM_SUMMARY, "Resumen.").replace(LLM_OWASP, "- A01"), encoding="utf-8")
+        code, found = vp.run_checks(tmp, briefs=True, previa=None, afectadas=None, as_json=False, quiet=True)
+        check(not [d for d in found if d["check_id"] == "BRIEF-LINT"], "completado, pasa el linter de briefs (%s)" % [d["description"] for d in found if d["check_id"] == "BRIEF-LINT"])
         # nombre estable tras renombrar la feature
         tj = json.loads((plan / "tasks.json").read_text(encoding="utf-8"))
         tj["features"][0]["name"] = "Registro de socios"

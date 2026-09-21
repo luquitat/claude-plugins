@@ -1,6 +1,6 @@
 {
   "name": "requerimientos",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "displayName": "Requirements Pipeline (LEL y Escenarios, iterativo)",
   "description": "Pipeline iterativo de ingenieria de requisitos con el metodo LEL y Escenarios de Leite, Hadad, Kaplan y Doorn. Descubre el mapa del producto desde documentos, carpetas o una entrevista sin documento; elabora y baselinea features por incrementos; y absorbe cambios sobre lo baselineado con confirmacion y changelog. Todo trazable y auditable.",
   "keywords": [

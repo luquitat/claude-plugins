@@ -97,7 +97,7 @@ requirements-pipeline/
         apply_delta.py           merge de deltas paralelos, renumeracion de ids, summary
         validate_baseline.py     checks mecanicos de LEL / requisitos / diseno
         render_baseline_docs.py  todos los .md derivados (artefactos, inspecciones, cuestionario)
-        check_closure.py         compuerta de cierre (layout, inspecciones, versiones, vistas)
+        check_closure.py         compuerta de cierre (layout, inspecciones, versiones, vistas, baseline)
         render_index.py          indice .dev/README.md
   commands/
     requerimientos.md            modo completo (clasico)
@@ -130,7 +130,8 @@ mecanico y los subagentes leen **tajadas** por feature, no la linea de base ente
 - **Vistas `.md` por script**, incluidas inspecciones y cuestionario, y siempre
   **antes** de inspeccionar (asi la sincronia nunca sale en rojo por orden).
 - **Cierre por exit code**: `check_closure.py` verifica layout cerrado, inspecciones
-  en verde y vigentes, versiones que solo crecen y vistas sincronizadas.
+  en verde y vigentes, versiones que solo crecen, vistas sincronizadas y
+  `validate_baseline.py` completo en verde.
 
 ## Instalacion
 

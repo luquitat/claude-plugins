@@ -79,7 +79,7 @@ GROUPS = {
 }
 JUDGMENT = {
     "lel": ["LEL-CHECK-%03d" % i for i in (4, 9, 10, 13, 14)],
-    "requirements": ["REQ-CHECK-%03d" % i for i in (7, 9)],
+    "requirements": ["REQ-CHECK-%03d" % i for i in (7, 9, 15)],
     "design": ["DB-CHECK-%03d" % i for i in (2, 3, 4, 8, 12)],
 }
 

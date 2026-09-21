@@ -20,6 +20,11 @@ Que verifica:
      vigente del `.json` (re-correr render_baseline_docs.py si no).
   5. Ninguna entrada del changelog distinta de la corrida en curso (--corrida) queda
      en `in_progress`.
+  6. Coherencia artefacto <-> artefacto: corre validate_baseline.py completo (los tres
+     grupos; lo que no existe todavia se saltea) y bloquea ante cualquier defecto
+     high/medium. Las inspecciones del punto 2 miran inspeccion <-> artefacto; esto
+     cubre, p. ej., un data-model.json que sigue citando un requirements.json viejo
+     despues de un CR.
 
 Solo stdlib, Python 3.8+. No modifica nada.
 
@@ -40,6 +45,9 @@ import json
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import validate_baseline  # noqa: E402  (hermano en la misma carpeta de scripts)
 
 DERIVED_HEADER = re.compile(r"Derivado de `?(?P<json>[\w.-]+)`? version (?P<version>\d+)")
 
@@ -152,6 +160,16 @@ def run(folder, inspections, corrida, as_json=False, quiet=False):
         if not m or m.group("version") != str(doc.get("version")):
             bad("%s.md desincronizado de %s.json version %s (correr render_baseline_docs.py)" % (name, name, doc.get("version")))
 
+    # 6. coherencia entre artefactos (validate_baseline completo)
+    _, found = validate_baseline.run_checks(folder, list(validate_baseline.GROUPS), False, quiet=True)
+    for d in found:
+        msg = "validate_baseline [%s][%s] %s: %s (rebota a %s)" % (
+            d["check_id"], d["severity"], d["target_id"], d["description"], d["bounce"])
+        if d["severity"] in ("high", "medium"):
+            bad(msg)
+        else:
+            warnings.append(msg)
+
     if not quiet:
         if as_json:
             print(json.dumps({"ok": not problems, "problems": problems, "warnings": warnings}, ensure_ascii=False, indent=2))
@@ -160,7 +178,7 @@ def run(folder, inspections, corrida, as_json=False, quiet=False):
                 print("BLOQUEO: %s" % p)
             for w in warnings:
                 print("aviso: %s" % w)
-            print("CIERRE BLOQUEADO: %d problema(s)." % len(problems) if problems else "Cierre OK: layout cerrado, inspecciones en verde, versiones y vistas coherentes.")
+            print("CIERRE BLOQUEADO: %d problema(s)." % len(problems) if problems else "Cierre OK: layout cerrado, inspecciones en verde, versiones, vistas y baseline coherentes.")
     return (1 if problems else 0), problems
 
 
@@ -187,6 +205,16 @@ def self_test():
                                          {"id": "INC-002", "status": "in_progress"}]})
         code, probs = run(tmp, ["requirements"], "INC-002", quiet=True)
         check(code == 0, "fixture consistente pasa: %s" % probs)
+
+        # un CR sube requirements.json y el diseno sigue citando la version vieja:
+        # las inspecciones pueden estar al dia y aun asi la baseline es incoherente
+        w("data-model.json", {"version": 1, "metadata": {"requirements_version_ref": "2"}, "entities": []})
+        md("data-model", 1)
+        code, probs = run(tmp, ["requirements"], "INC-002", quiet=True)
+        check(code == 1 and any("DB-CHECK-010" in p for p in probs),
+              "detecta version ref vieja entre artefactos (validate_baseline): %s" % probs)
+        (tmp / "data-model.json").unlink()
+        (tmp / "data-model.md").unlink()
 
         md("requirements", 3)                                             # vista vieja
         (tmp / "scenarios.FG-01.delta.json").write_text("{}", encoding="utf-8")   # delta sin mergear

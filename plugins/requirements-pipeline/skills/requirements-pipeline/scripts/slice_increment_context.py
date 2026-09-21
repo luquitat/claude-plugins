@@ -29,7 +29,10 @@ Que incluye cada tajada:
 Con --indice escribe ademas `.inc-context/index.json`: un indice compacto de TODA la
 linea de base (ids, nombres, estados, enunciados de una linea) para que
 `product-mapping` detecte solapamientos y las inspecciones de juicio verifiquen
-vocabulario y referencias sin abrir los canonicos.
+vocabulario y referencias sin abrir los canonicos. Solo con --indice (sin --features)
+product-map.json es opcional: en el primer descubrimiento la inspeccion del LEL corre
+en paralelo con `product-mapping`, que es quien lo crea, y el indice sale sin
+features ni propuestas.
 
 Los artefactos ausentes se saltean con aviso. La carpeta `.inc-context/` es temporal:
 se borra en el cierre con --limpiar.
@@ -45,7 +48,8 @@ Uso:
 
   carpeta  por defecto .dev/requirements
 
-Exit 0 con las tajadas escritas; exit 1 si falta product-map.json o una feature.
+Exit 0 con las tajadas escritas; exit 1 si falta una feature, o product-map.json
+cuando se piden tajadas (--features).
 """
 
 from __future__ import annotations
@@ -282,7 +286,8 @@ def build_index(docs, pipeline_version):
 
 
 def run(folder, features, corrida, pipeline_version, parallel, indice=False):
-    pmap = load(folder / "product-map.json", required=True)
+    # el indice solo no necesita el mapa: en el DSC inicial todavia no existe
+    pmap = load(folder / "product-map.json", required=bool(features))
     docs = (
         pmap,
         load(folder / "lel.json"),
@@ -382,6 +387,12 @@ def self_test():
         check(s["id_policy"]["next_free"]["SCN"] == 3 and s["id_policy"]["next_free"]["AC"] == 5, "proximo id libre por prefijo")
         check(s["id_policy"]["mode"] == "parallel" and "SCN-FG01#1" in s["id_policy"]["provisional_format"], "politica de ids provisionales")
         check(s["versions"]["lel"] == 5 and s["run_id"] == "INC-002" and s["pipeline_version"] == "9.9.9", "versiones y estampas")
+        # primer descubrimiento: el mapa todavia no existe y el indice igual sale
+        (tmp / "product-map.json").unlink()
+        code = run(tmp, None, None, "9.9.9", True, indice=True)
+        idx = json.loads((tmp / CONTEXT_DIR / "index.json").read_text(encoding="utf-8"))
+        check(code == 0 and idx["features"] == [] and len(idx["lel"]) == 3,
+              "--indice sin product-map.json: indice sin features (DSC inicial)")
         code = clean(tmp)
         check(code == 0 and not (tmp / CONTEXT_DIR).exists(), "--limpiar borra la carpeta temporal")
     finally:

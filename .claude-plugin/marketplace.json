@@ -11,7 +11,7 @@
     {
       "name": "planning-pipeline",
       "description": "Convierte una linea de base de requisitos en un plan de ejecucion para agentes IA: deriva tareas trazables dimensionadas para una pasada de agente, calcula los lotes de features paralelas por script determinista, valida el plan por script + inspeccion de juicio y emite los briefs de feature en paralelo. Con /replanificar absorbe cambios de requisitos sin tocar lo construido.",
-      "version": "2.7.4",
+      "version": "2.7.5",
       "author": {
         "name": "Lucas Micheli",
         "email": "lucas.t.micheli@gmail.com"
@@ -66,7 +66,7 @@
     {
       "name": "requerimientos",
       "description": "Pipeline iterativo de ingenieria de requisitos (LEL y Escenarios): descubre el mapa del producto desde documentos, carpetas o una entrevista sin documento; elabora y baselinea features por incrementos; y absorbe cambios con confirmacion y changelog, todo trazable.",
-      "version": "2.6.2",
+      "version": "2.6.3",
       "author": {
         "name": "Lucas Micheli",
         "email": "lucas.t.micheli@gmail.com"

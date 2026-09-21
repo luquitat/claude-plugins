@@ -73,7 +73,7 @@ vision sin doc-+        -> apply_delta.py -> [lel-authoring]
 | `product-mapping` | Mapa del producto: features y escenarios stub priorizados, con estados | descubrir | `agents/product-mapping.md` |
 | `scenario-modeling` | Elabora en profundidad los escenarios de las features del incremento | incremento | `agents/scenario-modeling.md` |
 | `requirements-specification` | Especifica los requisitos de las features del incremento | incremento, cambio | `agents/requirements-specification.md` |
-| `requirements-inspection` | Audita la especificacion (cobertura de lo elaborado, trazabilidad, campos para planificar) | incremento, cambio | `agents/requirements-inspection.md` |
+| `requirements-inspection` | Audita la especificacion (cobertura de lo elaborado, trazabilidad, campos para planificar, coherencia entre features) | incremento, cambio | `agents/requirements-inspection.md` |
 | `technical-design` | Extiende el modelo de datos y el diseno con lo que el incremento necesita | incremento, cambio | `agents/technical-design.md` |
 | `design-inspection` | Inspecciona el diseno y la normalizacion del modelo de datos | incremento, cambio | `agents/design-inspection.md` |
 
@@ -133,7 +133,9 @@ La orquestacion vive en la skill `skills/requirements-pipeline/SKILL.md` del plu
 ### Cierre por script
 - `check_closure.py` bloquea el cierre si quedan deltas o carpetas temporales,
   archivos fuera del layout, inspecciones en rojo o viejas, contadores de `version`
-  que retrocedieron o vistas `.md` desincronizadas.
+  que retrocedieron, vistas `.md` desincronizadas o defectos high/medium de
+  `validate_baseline.py` (coherencia artefacto <-> artefacto, p. ej. version refs
+  viejos despues de un CR).
 
 ### Versionado
 - Toda reescritura de un artefacto incrementa su `version`; los `*_version_ref` citan
